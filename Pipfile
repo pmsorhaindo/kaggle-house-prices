@@ -8,6 +8,7 @@ flake8 = "*"
 
 [packages]
 pandas = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.7"
