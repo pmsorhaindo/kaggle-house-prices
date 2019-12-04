@@ -13,7 +13,7 @@ def read_data(training_path, test_path):
     train['train'] = 1
     test = pd.read_csv(test_path)
     test['train'] = 0
-    data = train.append(test, ignore_index=True)
+    data = train.append(test, ignore_index=True, sort=False)
     return train, test, data
 
 
@@ -22,12 +22,12 @@ def populate_missing_values(data, variable, new_value):
 
 
 def fixing_ordinal_variables(data, variable):
-    data[variable][data[variable] == 'Ex'] = 5
-    data[variable][data[variable] == 'Gd'] = 4
-    data[variable][data[variable] == 'TA'] = 3
-    data[variable][data[variable] == 'Fa'] = 2
-    data[variable][data[variable] == 'Po'] = 1
-    data[variable][data[variable] == 'None'] = 0
+    data.loc[data[variable] == 'Ex', variable] = 5
+    data.loc[data[variable] == 'Gd', variable] = 4
+    data.loc[data[variable] == 'TA', variable] = 3
+    data.loc[data[variable] == 'Fa', variable] = 2
+    data.loc[data[variable] == 'Po', variable] = 1
+    data.loc[data[variable] == 'None', variable] = 0
 
 
 train, test, data = read_data('data/train.csv', 'data/test.csv')
@@ -53,49 +53,47 @@ fixing_ordinal_variables(data, 'GarageQual')
 fixing_ordinal_variables(data, 'GarageCond')
 fixing_ordinal_variables(data, 'PoolQC')
 
-data['PavedDrive'][data['PavedDrive'] == 'Y'] = 3
-data['PavedDrive'][data['PavedDrive'] == 'P'] = 2
-data['PavedDrive'][data['PavedDrive'] == 'N'] = 1
+data.loc[data['PavedDrive'] == 'Y', 'PavedDrive'] = 3
+data.loc[data['PavedDrive'] == 'P', 'PavedDrive'] = 2
+data.loc[data['PavedDrive'] == 'N', 'PavedDrive'] = 1
 
-# colu = data.columns[(data.isnull().sum() < 50) & (data.isnull().sum() > 0)]
+# colu = data.columns[(data.isnull().sum() > 50) & (data.isnull().sum() > 0)]
 # for i in colu:
-#    print(data[colu].isnull().sum())
+#     print(data[colu].isnull().sum())
 
 # populate data for Garage related features when house doesn't have a garage
-populate_missing_values(data, 'GarageArea', 0)
-populate_missing_values(data, 'GarageCars', 0)
-data['GarageFinish'][
-  (data.GarageFinish.isnull() is True) & (data.GarageCond == 0)
-  ] = 0
-data['GarageType'][
-  (data.GarageType.isnull() is True) & (data.GarageCond == 0)
-  ] = 0
-data['GarageYrBlt'][
-  (data.GarageYrBlt.isnull() is True) & (data.GarageCond == 0)
-  ] = 0
+# populate_missing_values(data, 'GarageArea', 0
+# populate_missing_values(data, 'GarageCars', 0)
+# data['GarageFinish'][
+#   (data.GarageFinish.isnull() is True) & (data.GarageCond == 0)
+#   ] = 0
+# data['GarageType'][
+#   (data.GarageType.isnull() is True) & (data.GarageCond == 0)
+#   ] = 0
+# data['GarageYrBlt'][
+#   (data.GarageYrBlt.isnull() is True) & (data.GarageCond == 0)
+#   ] = 0
 
+# print(data.describe())
 
-trainX, testX, trainY, testY = train_test_split(data[data.SalePrice.isnull()==False].drop('SalePrice',axis=1),data.SalePrice[data.SalePrice.isnull()==False],test_size=0.30, random_state=2019)
-trainY = np.log(trainY)
+# trainX, testX, trainY, testY = train_test_split(data[data.SalePrice.isnull()==False].drop('SalePrice',axis=1),data.SalePrice[data.SalePrice.isnull()==False],test_size=0.30, random_state=2019)
+# trainY = np.log(trainY)
 
-print(trainY)
+# model = XGBRegressor(
+#   learning_rate=0.001,
+#   n_estimators=4600,
+#   max_depth=7,
+#   min_child_weight=0,
+#   gamma=0,
+#   subsample=0.7,
+#   colsample_bytree=0.7,
+#   scale_pos_weight=1,
+#   seed=27,
+#   reg_alpha=0.00006
+# )
 
+# model.fit(trainX, trainY)
+# y_pred = model.predict(testX)
+# y_pred = np.exp(y_pred)
 
-model = XGBRegressor(
-  learning_rate=0.001,
-  n_estimators=4600,
-  max_depth=7,
-  min_child_weight=0,
-  gamma=0,
-  subsample=0.7,
-  colsample_bytree=0.7,
-  scale_pos_weight=1,
-  seed=27,
-  reg_alpha=0.00006
-)
-
-model.fit(trainX, trainY)
-y_pred = model.predict(testX)
-y_pred = np.exp(y_pred)
-
-print(rmsle(testY, y_pred))
+# print(rmsle(testY, y_pred))
